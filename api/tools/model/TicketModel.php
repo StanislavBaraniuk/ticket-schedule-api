@@ -21,10 +21,10 @@ class TicketModel extends Model
     }
 
     function get ($params = []) {
-        $this->query(SQL::SELECT($params, 0, TICKETS));
+        return $this->query(SQL::SELECT($params, 0, TICKETS));
     }
 
     function getById ($params) {
-        return json_encode($this->query(SQL::SELECT(array("GET" => ["*"], "WHERE" => ["ID" => $params]), 0, TICKETS)));
+        return $this->query(SQL::SELECT(array("GET" => ["*"], "WHERE" => ["ID" => $params]), 0, TICKETS));
     }
 }
