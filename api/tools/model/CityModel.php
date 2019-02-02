@@ -10,6 +10,13 @@ class CityModel extends Model {
     }
 
     function get ($params = []) {
-        echo json_encode($this->query(SQL::SELECT($params, 0, STATIONS)));
+        $load_cities = $this->query(SQL::SELECT(["GET"=>["*"]], 0, STATIONS));
+        foreach ($load_cities as &$city) {
+            $return_cities[$city["ID"]] = $city["NAME"];
+        }
+
+        return $return_cities;
     }
 }
+
+

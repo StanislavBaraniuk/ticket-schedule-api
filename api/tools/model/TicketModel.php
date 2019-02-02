@@ -21,7 +21,16 @@ class TicketModel extends Model
     }
 
     function get ($params = []) {
-        return $this->query(SQL::SELECT($params, 0, TICKETS));
+        $tickets = $this->query(
+            SQL::SELECT($params, 0, TICKETS)
+        );
+
+        foreach ($tickets as &$ticket) {
+            $ticket["STATIONS"] = explode(",", $ticket["STATIONS"]);
+            $ticket["PLACES"] = explode(",", $ticket["PLACES"]);
+        }
+
+        return $tickets;
     }
 
     function getById ($params) {

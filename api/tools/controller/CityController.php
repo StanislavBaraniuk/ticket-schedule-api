@@ -8,23 +8,25 @@
 
 class CityController extends Controller {
 
+    private $request;
+
     function __construct()
     {
         $this->model = $this->getModel(__CLASS__);
+        $this->request = Parser::json();
     }
 
-    function addAction($params = []) {
+    function addAction() {
         Access::_RUN_(["authorization", "admin"]);
-        $this->model->add(Parser::json());
+        $this->model->add($this->request);
     }
 
-    function deleteAction($params = []) {
+    function deleteAction() {
         Access::_RUN_(["authorization", "admin"]);
-        $this->model->delete(Parser::json());
+        $this->model->delete($this->request);
     }
 
     function getAction () {
-        Access::_RUN_(["authorization"]);
-        $this->model->get(Parser::json());
+        ResponseControl::outputGet($this->model->get($this->request));
     }
 }

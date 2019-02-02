@@ -8,6 +8,7 @@
 
 class ResponseControl {
     public static function outputGet ($data, $info = ["code" => 302, "message" => "Nothing to output"]) {
+        header("Content-Type: application/json; charset=UTF-8");
         if (count($data) > 0) {
             echo json_encode($data);
         } else {
@@ -16,7 +17,8 @@ class ResponseControl {
         }
     }
 
-    public static function generateError ($code = 302, $message = "Nothing to output") {
+    public static function generateStatus ($code = 302, $message = "Nothing to output") {
+        header("Content-Type: application/json; charset=UTF-8");
         http_response_code($code);
         echo $message;
     }

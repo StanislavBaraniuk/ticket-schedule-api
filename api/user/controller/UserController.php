@@ -16,8 +16,24 @@ class UserController extends Controller
         $this->user_data = Parser::json();
     }
 
+    function getInfoAction  () {
+        Access::_RUN_(["authorization"]);
+        ResponseControl::outputGet($this->model->getInfo());
+    }
+
     function loginAction () {
-        $this->authorization($this->user_data['login'],$this->user_data['password']);
+        ResponseControl::generateStatus(200, "");
+        echo $this->model->authorization($this->user_data['login'],$this->user_data['password']);
+    }
+
+    function isAuthAction () {
+        Access::_RUN_(["authorization"]);
+        ResponseControl::outputGet(1);
+    }
+
+    function isAdminAction () {
+        Access::_RUN_(["admin"]);
+        ResponseControl::outputGet(1);
     }
 
     function logoutAction () {
@@ -51,17 +67,25 @@ class UserController extends Controller
     }
 
     function getMenuAction () {
-        Access::_RUN_(["authorization"]);
-        print_r( $this->model->getMenu() );
+        ResponseControl::outputGet($this->model->getMenu());
     }
 
-    public function forgetSendAction () {
-        $token = $this->generateToken();
+    /**
+     * Will send email with link for set a new password to the user
+     *
+     * @param POST-request with data of JSON type { "email" : <value> }
+     */
+    public function forgetPasswordSendEmailAction () {
+        $token = $this->model->generateToken();
         $this->model->sendEmailWithTemporaryToken($this->user_data["email"], $token);
         $this->model->addTemporaryToken($this->user_data["email"], $token, "password");
     }
 
-    public function forgetNewPasswordAction($token) {
+    /**
+     * The window for password changing by the link from email that was sent by forgetPasswordSendEmailAction
+     *
+     */
+    public function forgetPasswordSetNewAction($token) {
         $email = $this->model->getTemporaryTokenUser($token);
         if (!empty($email) && !empty($_POST["password"])) {
             $this->model->setFPassword($email, $_POST['password']);
@@ -78,48 +102,5 @@ class UserController extends Controller
             ";
         }
     }
-
-    private function generateToken () {
-        $token = '';
-
-        for ($i = 0; $i < 30; $i++) {
-            $symbol = [rand(48, 57), rand(97, 122), rand(65, 90)];
-
-            $token .= chr($symbol[rand(0, 2)]);
-        }
-
-        return $token;
-    }
-
-    private function getToken () {
-        do {
-            $token = $this->generateToken();
-            $check = !empty($this->model->checkTokenExisting($token)[0]["EMAIL"]);
-        } while ($check);
-
-        return $token;
-    }
-
-    private function setUserToken ($login, $token) {
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $this->model->setUserToken($login, $token);
-        $this->model->setUserIP($login, $ip);
-    }
-
-    private function authorization ($login, $password) {
-        $user_password = $this->model->getPassword($login);
-
-        if (!empty($user_password)) {
-            if ($password == $user_password) {
-                $token = $this->getToken();
-                $this->setUserToken($login, $token);
-                echo $token;
-                exit(0);
-            }
-        }
-
-        ResponseControl::generateError(401, "Authorization failed");
-    }
-
 
 }

@@ -17,10 +17,10 @@ class OrderModel extends Model
     }
 
     function get ($params = []) {
-        $this->query(SQL::SELECT($params, 0, ORDERS));
+        return $this->query(SQL::SELECT($params, 0, ORDERS));
     }
 
-    function getById ($params = []) {
-        return json_encode($this->query(SQL::SELECT(array("GET" => ["*"], "WHERE" => ["ID" => $params]), 0, ORDERS)));
+    function getByCode ($params = []) {
+        return $this->query(SQL::SELECT(array("GET" => ["*"], "WHERE" => ["CODE" => $params]), 0, ORDERS));
     }
 }

@@ -32,7 +32,6 @@ class TicketController extends Controller {
     }
 
     function getAction() {
-        Access::_RUN_(["authorization"]);
         ResponseControl::outputGet($this->model->get($this->request));
     }
 

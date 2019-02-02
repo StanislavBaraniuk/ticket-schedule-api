@@ -6,9 +6,7 @@ Access::_USE_();
  * @return bool
  */
 
-$response_ip = $_SERVER['REMOTE_ADDR'];
-$user_ip = (new DB)->query(SQL::SELECT(["GET" => ['IP'], "WHERE" => ["TOKEN" => explode(" ",apache_request_headers()["Authorization"])[1]]], 0, USERS))[0]["IP"];
+$user_ip = $_SERVER['REMOTE_ADDR'];
+$db_user_ip = (new DB)->query(SQL::SELECT(["GET" => ['IP'], "WHERE" => ["TOKEN" => Parser::getBearerToken()]], 0, USERS))[0]["IP"];
 
-http_response_code(401);
-
-return [!empty($user_ip) && $user_ip == $response_ip, "Need authorization"];
+return [!empty($db_user_ip) && $user_ip == $db_user_ip, "Need authorization", 401];

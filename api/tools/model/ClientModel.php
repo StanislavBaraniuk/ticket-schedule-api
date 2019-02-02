@@ -8,23 +8,23 @@
 
 class ClientModel extends Model
 {
-    function add ($params = []) {
+    function add ($params) {
         $this->query(SQL::INSERT($params));
     }
 
-    function delete ($params = []) {
+    function delete ($params) {
         $this->query(SQL::DELETE($params, 0, USERS));
     }
 
-    function update ($params = []) {
+    function update ($params) {
         $this->query(SQL::UPDATE($params, 0, USERS));
     }
 
-    function get ($params = []) {
-        $this->query(SQL::SELECT($params, 0, USERS));
+    function get ($params) {
+        return $this->query(SQL::SELECT($params, 0, USERS));
     }
 
     function getById ($params) {
-        return json_encode($this->query(SQL::SELECT(array("GET" => ["ID","FIRST_NAME","LAST_NAME","EMAIL","PASSWORD","PHONE","SEX","ONLINE","ACTIVE_ORDER","AVATAR"], "WHERE" => ["ID" => $params]), 0, USERS)));
+        return $this->query(SQL::SELECT(array("GET" => ["ID","FIRST_NAME","LAST_NAME","EMAIL","PASSWORD","PHONE","SEX","ONLINE","ACTIVE_ORDER","AVATAR"], "WHERE" => ["ID" => $params]), 0, USERS));
     }
 }
