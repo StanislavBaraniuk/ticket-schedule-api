@@ -23,7 +23,7 @@ class UserController extends Controller
 
     function loginAction () {
         ResponseControl::generateStatus(200, "");
-        echo $this->model->authorization($this->user_data['login'],$this->user_data['password']);
+        ResponseControl::outputGet($this->model->authorization($this->user_data['login'],$this->user_data['password']));
     }
 
     function isAuthAction () {
@@ -79,6 +79,7 @@ class UserController extends Controller
         $token = $this->model->generateToken();
         $this->model->sendEmailWithTemporaryToken($this->user_data["email"], $token);
         $this->model->addTemporaryToken($this->user_data["email"], $token, "password");
+        ResponseControl::outputGet('');
     }
 
     /**

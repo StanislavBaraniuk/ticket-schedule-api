@@ -159,7 +159,7 @@ class UserModel extends Model
                     </div>
                 
                    <div style="margin-left: auto; margin-right: auto; margin-top: 50px;  width:200px; text-align: center; background-color: whitesmoke; padding: 20px;">
-                        <a href="http://tickets-api.zzz.com.ua/user/forgetNewPassword/'.$token.'" style="height: 120px; width: 200px; text-decoration: none; color: darkgray; font-size: 20px">
+                        <a href="http://tickets-api.zzz.com.ua/user/forgetPasswordSetNew/'.$token.'" style="height: 120px; width: 200px; text-decoration: none; color: darkgray; font-size: 20px">
                             Set new password
                         </a>
                     </div>
