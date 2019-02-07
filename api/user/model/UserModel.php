@@ -134,8 +134,6 @@ class UserModel extends Model
     }
 
     public function sendEmailWithTemporaryToken ($email, $token) {
-        $to  = $email ;
-
         $subject = "Update ".substr($token, 0, 5);
 
         $message = ' 
@@ -151,7 +149,7 @@ class UserModel extends Model
                     </div>
                   
                   <div style="margin-top: 10px; text-align: center; font-size: 15px">
-                      Hello, dear '.$to.'
+                      Hello, dear '.$email.'
                     </div>
                   
                   <div style="margin-top: 10px; text-align: center; font-size: 15px">
@@ -174,16 +172,7 @@ class UserModel extends Model
                 </body> 
             </html>';
 
-        $headers  = "Content-type: text/html; charset=windows-1251 \r\n";
-        $headers .= "From: TIC.S <tics@tickets-api.zzz.com.ua>\r\n";
-        $headers .= "Bcc: tics@tickets-api.zzz.com.ua\r\n";
-
-        if (mail($to, $subject, $message, $headers)) {
-            echo "200 OK";
-        } else {
-            echo "SENDING ERROR";
-        }
-
+        EmailSender::send('tics@tickets-api.zzz.com.ua', $email, "TIC.S", $subject, $message);
     }
 
     public function addTemporaryToken ($email, $token, $type) {
@@ -192,21 +181,9 @@ class UserModel extends Model
         );
     }
 
-    public function generateToken () {
-        $token = '';
-
-        for ($i = 0; $i < 30; $i++) {
-            $symbol = [rand(48, 57), rand(97, 122), rand(65, 90)];
-
-            $token .= chr($symbol[rand(0, 2)]);
-        }
-
-        return $token;
-    }
-
     public function getToken () {
         do {
-            $token = $this->generateToken();
+            $token = TokenGenerator::generate();
             $check = !empty($this->checkTokenExisting($token)[0]["EMAIL"]);
         } while ($check);
 

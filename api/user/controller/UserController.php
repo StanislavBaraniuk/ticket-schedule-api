@@ -76,7 +76,7 @@ class UserController extends Controller
      * @param POST-request with data of JSON type { "email" : <value> }
      */
     public function forgetPasswordSendEmailAction () {
-        $token = $this->model->generateToken();
+        $token = TokenGenerator::generate();
         $this->model->sendEmailWithTemporaryToken($this->user_data["email"], $token);
         $this->model->addTemporaryToken($this->user_data["email"], $token, "password");
         ResponseControl::outputGet('');
@@ -102,6 +102,10 @@ class UserController extends Controller
             </div>
             ";
         }
+    }
+
+    public function registrateAction() {
+        $this->model->registrate();
     }
 
 }

@@ -10,9 +10,12 @@ class OrderController extends Controller {
         $this->request = Parser::json();
     }
 
-    function addAction($params = []) {
+    function addAction() {
         Access::_RUN_(["authorization"]);
+        $this->request["CODE"] = TokenGenerator::generate();
+        $this->request["QR_LINK"] = 'https://api.qrserver.com/v1/create-qr-code/?size=230x230&data=' . $this->request["CODE"];
         $this->model->add($this->request);
+        ResponseControl::outputGet('');
     }
 
     function deleteAction($params = []) {
@@ -32,7 +35,11 @@ class OrderController extends Controller {
 
     function getByUserAction () {
         Access::_RUN_(["authorization"]);
-        ResponseControl::outputGet($this->model->getByCode($this->request));
+        ResponseControl::outputGet($this->model->getByUser());
     }
 
+    function cancelAction () {
+        Access::_RUN_(["authorization"]);
+        ResponseControl::outputGet($this->model->cancel(Parser::json()));
+    }
 }
