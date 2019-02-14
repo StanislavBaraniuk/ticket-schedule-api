@@ -15,4 +15,8 @@ class SiteModel extends Model
     function off () {
         $this->query(SQL::UPDATE(["SET" => ["VALUE" => 0], "WHERE" => ["TITLE" => "is_active"]], 0, SETTING));
     }
+
+    function getMode() {
+        return $this->query(SQL::SELECT(["GET" => ["VALUE"], "WHERE" => ["TITLE" => "is_active"]], 0, SETTING))[0]['VALUE'];
+    }
 }

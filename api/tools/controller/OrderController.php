@@ -24,8 +24,8 @@ class OrderController extends Controller {
     }
 
     function getAction () {
-        Access::_RUN_(["authorization, admin"]);
-        ResponseControl::outputGet($this->model->get($this->request));
+        Access::_RUN_(["authorization", "admin"]);
+        ResponseControl::outputGet($this->model->get(Parser::json()));
     }
 
     function getByCodeAction () {
@@ -41,5 +41,15 @@ class OrderController extends Controller {
     function cancelAction () {
         Access::_RUN_(["authorization"]);
         ResponseControl::outputGet($this->model->cancel(Parser::json()));
+    }
+
+    function countAction () {
+        Access::_RUN_(["authorization", 'admin']);
+        ResponseControl::outputGet($this->model->count(Parser::json()));
+    }
+
+    function profitAction () {
+        Access::_RUN_(["authorization", 'admin']);
+        ResponseControl::outputGet($this->model->profit(Parser::json()));
     }
 }

@@ -22,4 +22,8 @@ class SiteController extends Controller
         Access::_RUN_(["authorization", "admin"]);
         $this->model->off();
     }
+
+    function modeAction() {
+        ResponseControl::outputGet($this->model->getMode());
+    }
 }

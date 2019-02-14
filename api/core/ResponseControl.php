@@ -6,8 +6,15 @@
  * Time: 09:47
  */
 
+/** Work with api output data **/
 class ResponseControl {
-    public static function outputGet ($data, $info = ["code" => 302, "message" => "Nothing to output"]) {
+
+    /** Gets data and output it in JSON
+     *
+     * @param $data array || string
+     * @param error will display if nothing to output
+     **/
+    public static function outputGet ($data = "OK", $info = ["code" => 302, "message" => "Nothing to output"]) {
         header("Content-Type: application/json; charset=UTF-8");
         if (count($data) > 0) {
             echo json_encode($data);
@@ -17,7 +24,13 @@ class ResponseControl {
         }
     }
 
-    public static function generateStatus ($code = 302, $message = "Nothing to output") {
+    /**
+     * Generate HTTP response
+     *
+     * @param int $code
+     * @param string $message
+     */
+    public static function generateStatus (int $code = 302, $message = "Nothing to output") {
         header("Content-Type: application/json; charset=UTF-8");
         http_response_code($code);
         echo $message;

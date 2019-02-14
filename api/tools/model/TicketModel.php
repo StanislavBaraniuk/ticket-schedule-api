@@ -12,8 +12,11 @@ class TicketModel extends Model
         $this->query(SQL::INSERT($params));
     }
 
-    function delete ($params = []) {
-        $this->query(SQL::DELETE($params, 0, TICKETS));
+    function delete ($params) {
+        $this->query(SQL::DELETE(["ID" => $params], 0, TICKETS));
+        $this->query(SQL::DELETE(["TICKET_ID" => $params], 0, ORDERS));
+
+        ResponseControl::outputGet();
     }
 
     function update ($params = []) {

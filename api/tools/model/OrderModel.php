@@ -14,15 +14,19 @@ class OrderModel extends Model
      * @param array $params
      */
     function add ($params = []) {
+        // Add order
         $this->query(SQL::INSERT($params, 0, ORDERS));
 
+        // Get places from ordered ticket
         $places = explode(',', $this->query(SQL::SELECT(["GET" => ["PLACES"], "WHERE" => ["ID" => $params["TICKET_ID"]]], 0, TICKETS))[0]["PLACES"]);
 
+        // Delete choosed place from ticket
         unset($places[array_search($params["PLACE"], $places)]);
 
-        $user_email = $this->query(SQL::SELECT(array("GET" => ["EMAIL"], "WHERE" => ["TOKEN" => Parser::getBearerToken()]), 0, USERS))[0];
-
+        // Insert new kit of places for the chosen ticket, without chosen place
         $this->query(SQL::UPDATE(["SET" => ["PLACES" => implode(',', $places)], "WHERE" => ["ID" => $params["TICKET_ID"]]], 0, TICKETS));
+
+        $user_email = $this->query(SQL::SELECT(array("GET" => ["EMAIL"], "WHERE" => ["TOKEN" => Parser::getBearerToken()]), 0, USERS))[0];
 
         $this->sendTicketToUser($user_email["EMAIL"],
             $params["CODE"],
@@ -85,7 +89,11 @@ class OrderModel extends Model
         $this->query(SQL::DELETE($params, 0, ORDERS));
     }
 
-    function get ($params = []) {
+    function get ($params) {
+        if (empty($params)) {
+            return $this->query(SQL::SELECT(["GET" => ["*"]], 0, ORDERS));
+        }
+
         return $this->query(SQL::SELECT($params, 0, ORDERS));
     }
 
@@ -118,6 +126,45 @@ class OrderModel extends Model
     }
 
     function cancel ($code) {
+        $order         = $this->query(SQL::SELECT(["GET" => ["TICKET_ID","PLACE"], 'WHERE' => ["CODE" => $code["CODE"]]], 0, ORDERS))[0];
+        $ticket_places = $this->query(SQL::SELECT(["GET" => ["PLACES"], 'WHERE' => ["ID" => $order["TICKET_ID"]]], 0, TICKETS))[0]["PLACES"];
+
+        $this->query(SQL::UPDATE(["SET" => ["PLACES" => $ticket_places.','.$order["PLACE"]], "WHERE" => ["ID" => $order["TICKET_ID"]]], 0, TICKETS));
+
         return $this->query(SQL::DELETE(["CODE" => $code["CODE"]], 0, ORDERS)) ? 1 : 0;
+    }
+
+    function count ($param) {
+        if (empty($param['FROM']) || empty($param["TO"])) {
+            return null;
+        }
+
+        $filtered_count = $this->query("SELECT cast(DATE as date) as DATE, COUNT(ID) as VAL from orders WHERE `DATE` BETWEEN '".$param["FROM"]."' AND '".$param["TO"]."' GROUP BY cast(DATE as date) order by DATE");
+
+        foreach ($filtered_count as $item) {
+            $dates[] = $item["DATE"];
+            $counts[] = $item["VAL"];
+        }
+
+        return $dates != null ? ["DATES" => $dates, "VAL" => $counts] : $filtered_count;
+    }
+
+    function profit ($param) {
+        if (empty($param['FROM']) || empty($param["TO"])) {
+            return null;
+        }
+
+        $filtered_profit = $this->query("SELECT cast(DATE as date) as DATE, SUM(COST) as VAL from orders WHERE `DATE` BETWEEN '".$param["FROM"]."' AND '".$param["TO"]."' GROUP BY cast(DATE as date) order by DATE");
+
+        if (count($filtered_profit) > 0) {
+            foreach ($filtered_profit as $item) {
+                $dates[] = $item["DATE"];
+                $costs[] = $item["VAL"];
+            }
+
+            return ["DATES" => $dates, "VAL" => $costs];
+        }
+
+        return $filtered_profit;
     }
 }

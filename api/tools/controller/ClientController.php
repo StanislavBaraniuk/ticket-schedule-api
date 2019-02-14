@@ -22,22 +22,37 @@ class ClientController extends Controller {
     }
 
     function updateAction() {
-        Access::_RUN_(["authorization"]);
+        Access::_RUN_(["authorization", "site_online"]);
         $this->model->update($this->request);
     }
 
-    function deleteAction() {
+    function deleteAction($params) {
         Access::_RUN_(["authorization", "admin"]);
-        $this->model->delete($this->request);
+        $this->model->delete($params);
     }
 
     function getAction() {
-        Access::_RUN_(["authorization"]);
-        ResponseControl::outputGet($this->model->get($this->request));
+        Access::_RUN_(["authorization", "site_online"]);
+        ResponseControl::outputGet($this->model->get());
     }
 
     function getByIdAction($params) {
-        Access::_RUN_(["authorization"]);
+        Access::_RUN_(["authorization", "site_online"]);
         ResponseControl::outputGet($this->model->getById($params));
+    }
+
+    function gendersAction () {
+        Access::_RUN_(["authorization", "admin"]);
+        ResponseControl::outputGet($this->model->genders(Parser::json()));
+    }
+
+    function countAction () {
+        Access::_RUN_(["authorization", "admin"]);
+        ResponseControl::outputGet($this->model->count());
+    }
+
+    function onlineAction () {
+        Access::_RUN_(["authorization", "admin"]);
+        ResponseControl::outputGet($this->model->online(Parser::json()));
     }
 }

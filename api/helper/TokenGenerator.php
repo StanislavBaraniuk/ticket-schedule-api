@@ -6,9 +6,15 @@
  * Time: 09:53
  */
 
+/**
+ * Class TokenGenerator
+ */
 class TokenGenerator
 {
-    public static function generate () {
+    /**
+     * @return string
+     */
+    public static function generate (): string {
         $token = '';
 
         for ($i = 0; $i < 30; $i++) {

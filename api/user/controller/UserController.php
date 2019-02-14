@@ -9,6 +9,7 @@
 class UserController extends Controller
 {
     private $user_data;
+    private static $is_online = 0;
 
     function __construct()
     {
@@ -23,7 +24,7 @@ class UserController extends Controller
 
     function loginAction () {
         ResponseControl::generateStatus(200, "");
-        ResponseControl::outputGet($this->model->authorization($this->user_data['login'],$this->user_data['password']));
+        ResponseControl::outputGet($this->model->authorization($this->user_data['login'],$this->user_data['password']), ["code" => 401, 'message' => ""]);
     }
 
     function isAuthAction () {
@@ -104,8 +105,25 @@ class UserController extends Controller
         }
     }
 
-    public function registrateAction() {
-        $this->model->registrate();
+    public function registerAction() {
+        $this->model->register($this->user_data);
     }
 
+    public function setOnlineAction() {
+        static::$is_online = 1;
+    }
+
+    public function onlineAction ($params) {
+        Access::_RUN_(['authorization']);
+
+        $this->model->online($params);
+
+        ResponseControl::outputGet(["state" => $params]);
+    }
+
+    public function columnsAction ($params) {
+        Access::_RUN_(['authorization', 'admin']);
+
+        ResponseControl::outputGet($this->model->getTableColumns($params));
+    }
 }

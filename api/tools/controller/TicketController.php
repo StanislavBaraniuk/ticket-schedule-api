@@ -26,9 +26,9 @@ class TicketController extends Controller {
         $this->model->update($this->request);
     }
 
-    function deleteAction() {
+    function deleteAction($id) {
         Access::_RUN_(["authorization", "admin"]);
-        $this->model->delete($this->request);
+        $this->model->delete($id);
     }
 
     function getAction() {

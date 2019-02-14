@@ -23,17 +23,12 @@ class UserModel extends Model
         return $this->query(SQL::SELECT(["GET" => ["PASSWORD"], "WHERE" => ["EMAIL" => $login]], 0, USERS))[0]["PASSWORD"];
     }
 
-    public function setUserIP ($email, $ip) {
-        $this->query(SQL::UPDATE(["SET" => ["IP" => $ip], "WHERE" => ["EMAIL" => $email]], 0, USERS));
-    }
-
-    public function setUserToken ($email, $token) {
-        $this->query(SQL::UPDATE(["SET" => ["TOKEN" => $token], "WHERE" => ["EMAIL" => $email]], 0, USERS));
+    public function setUserTokenIP ($email, $token, $ip) {
+        $this->query(SQL::UPDATE(["SET" => ["TOKEN" => $token, "IP" => $ip, "ONLINE" => 1], "WHERE" => ["EMAIL" => $email]], 0, USERS));
     }
 
     public function logout () {
-        $this->query(SQL::UPDATE(["SET" => ["IP" => ""], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
-        $this->query(SQL::UPDATE(["SET" => ["TOKEN" => ""], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
+        $this->query(SQL::UPDATE(["SET" => ["IP" => "","TOKEN" => "","ONLINE" => 0], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
     }
 
     public function setPassword ($password) {
@@ -94,7 +89,7 @@ class UserModel extends Model
 
         $user_ip = $_SERVER['REMOTE_ADDR'];
         $db_user_ip = (new DB)->query(
-            SQL::SELECT(["GET" => ['IP'], "WHERE" => ["TOKEN" => Parser::getBearerToken()]], 0, USERS)
+            SQL::SELECT(["GET" => ['IP'], "WHERE" => ["TOKEN" => self::$token]], 0, USERS)
         )[0]["IP"];
 
         if ($input_token && !empty($db_user_ip) && $user_ip == $db_user_ip) {
@@ -122,7 +117,7 @@ class UserModel extends Model
     public function getInfo () {
         $user_data = $this->query(SQL::SELECT(["GET" => ["*"], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS))[0];
 
-        $parameters_to_hiding = ["PASSWORD", "ONLINE", "TOKEN", "IP"];
+        $parameters_to_hiding = ["PASSWORD", "TOKEN", "IP"];
 
         foreach ($parameters_to_hiding as $item) {
             if (isset($user_data[$item])) {
@@ -192,8 +187,7 @@ class UserModel extends Model
 
     public function setUser ($login, $token) {
         $ip = $_SERVER['REMOTE_ADDR'];
-        $this->setUserToken($login, $token);
-        $this->setUserIP($login, $ip);
+        $this->setUserTokenIP($login, $token, $ip);
     }
 
     public function authorization ($login, $password) {
@@ -208,5 +202,24 @@ class UserModel extends Model
         }
 
         ResponseControl::generateStatus(401, "Authorization failed");
+    }
+
+    public function register($params) {
+        $this->query(SQL::INSERT(["SET" => [$params]], 0, USERS));
+        return $this->authorization($params["EMAIL"], $params["PASSWORD"]);
+    }
+
+    public function online ($online) {
+        $this->query(SQL::UPDATE(["SET" => ["ONLINE" => $online], "WHERE" => ["TOKEN" => self::$token]], 0, USERS));
+    }
+
+    public function getTableColumns($params) {
+        $all_tables_info = $this->query("SHOW COLUMNS FROM ".DB_NAME.'.'.$params);
+
+        foreach ($all_tables_info as $item) {
+            $cut_info[] = $item["Field"];
+        }
+
+        return $cut_info;
     }
 }
