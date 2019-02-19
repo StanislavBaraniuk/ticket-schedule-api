@@ -28,31 +28,23 @@ class UserModel extends Model
     }
 
     public function logout () {
-        $this->query(SQL::UPDATE(["SET" => ["IP" => "","TOKEN" => "","ONLINE" => 0], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
+        ResponseControl::outputGet($this->query(SQL::UPDATE(["SET" => ["IP" => "","TOKEN" => "","ONLINE" => 0], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS)));
     }
 
-    public function setPassword ($password) {
-        $this->query(SQL::UPDATE(["SET" => ["PASSWORD" => $password], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
+    public function setPassword ($old_password, $new_password) {
+        $current_password = $this->query(SQL::SELECT(["GET" => ["PASSWORD"], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS))[0]['PASSWORD'];
+
+        if ($current_password == crypt($old_password, $current_password)) {
+            $this->query(SQL::UPDATE(["SET" => ["PASSWORD" => crypt($new_password)], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
+            ResponseControl::generateStatus(200, 'OK');
+            return 'OK';
+        }
+
+        ResponseControl::generateStatus(409, 'Password incorrect');
     }
 
     public function setFPassword ($email, $password) {
-        $this->query(SQL::UPDATE(["SET" => ["PASSWORD" => $password], "WHERE" => ["EMAIL" => $email]], 0, USERS));
-    }
-
-    public function setFIO ($f, $l) {
-        $this->query(SQL::UPDATE(["SET" => ["FIRST_NAME" => $f, "LAST_NAME" => $l], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
-    }
-
-    public function setPhone ($phone) {
-        $this->query(SQL::UPDATE(["SET" => ["PHONE" => $phone], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
-    }
-
-    public function setEmail ($email) {
-        $this->query(SQL::UPDATE(["SET" => ["EMAIL" => $email], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
-    }
-
-    public function setSex ($sex) {
-        $this->query(SQL::UPDATE(["SET" => ["SEX" => $sex], "WHERE" => ["TOKEN" =>  self::$token]], 0, USERS));
+        $this->query(SQL::UPDATE(["SET" => ["PASSWORD" => crypt($password)], "WHERE" => ["EMAIL" => $email]], 0, USERS));
     }
 
     public function getTemporaryTokenUser ($token) {
@@ -194,7 +186,7 @@ class UserModel extends Model
         $user_password = $this->getPassword($login);
 
         if (!empty($user_password)) {
-            if ($password == $user_password) {
+            if ($user_password == crypt($password, $user_password)) {
                 $token = $this->getToken();
                 $this->setUser($login, $token);
                 return $token;
@@ -205,8 +197,19 @@ class UserModel extends Model
     }
 
     public function register($params) {
-        $this->query(SQL::INSERT(["SET" => [$params]], 0, USERS));
-        return $this->authorization($params["EMAIL"], $params["PASSWORD"]);
+        $is_email_exist = count($this->query(SQL::SELECT(["GET" => ["ID"], "WHERE" => ["EMAIL" => $params["EMAIL"]]], 0, USERS))) > 0 ? true : false ;
+
+        if ($is_email_exist) {
+            ResponseControl::generateStatus(409, "Account already exist");
+            return false;
+        }
+
+        $pass = $params["PASSWORD"];
+        $params["PASSWORD"] = crypt($params["PASSWORD"]);
+
+        $this->query(SQL::INSERT($params, 0, USERS));
+        ResponseControl::outputGet($this->authorization($params["EMAIL"], $pass));
+        return true;
     }
 
     public function online ($online) {
@@ -221,5 +224,9 @@ class UserModel extends Model
         }
 
         return $cut_info;
+    }
+
+    public function changeInfo ($params) {
+        return $this->query(SQL::UPDATE(["SET" => [$params][0], "WHERE" => ["TOKEN" => self::$token]], 0, USERS));
     }
 }

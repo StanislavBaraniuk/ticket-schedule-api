@@ -11,6 +11,7 @@
 </head>
 <body>
 <div class="container-fluid introduce-block" style="background-color: #38863d; height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; position: absolute;">
+    <p style=""><?php echo $_POST['error'] ?></p>
     <div style="width: 250px; height: 150px; background-color: white; display: flex; justify-content: center; text-align: center; border-radius: 5px; margin-top: calc ( 50% - 150px )">
         <form action="" method="post">
             <p style="margin-top: 10px">Input new password</p>

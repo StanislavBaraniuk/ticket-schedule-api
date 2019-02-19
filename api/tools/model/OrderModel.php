@@ -57,10 +57,10 @@ class OrderModel extends Model
                       Предявіть цей QR
                     </div>
                   <div style="margin-left: auto; margin-right: auto; margin-top: 20px;  width:250px; text-align: center;">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data='.$token.'" alt="">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=http://tickets-api.zzz.com.ua/order/use/'.$token.'" alt="">
                   </div>
                    <div style="margin-top: 10px; text-align: center; font-size: 15px">
-                      Або продиктуйте код
+                      Або задиктуйте код
                     </div>
                     
                    <div style="margin-top: 10px; text-align: center; font-size: 15px; color: red">
@@ -166,5 +166,29 @@ class OrderModel extends Model
         }
 
         return $filtered_profit;
+    }
+
+    function checkout($code, $input_key) {
+        $admin_key = $this->query(SQL::SELECT(["GET" => ["VALUE"], 'WHERE' => ["TITLE" => 'admin_key']], 0, SETTING))[0]["VALUE"];
+        $is_active = $this->query(SQL::SELECT(["GET" => ["STATUS", "FROM_PLACE", "TO_PLACE"], "WHERE" => ["CODE" => $code]], 0, ORDERS));
+
+        if ($admin_key !== $input_key) {
+            return "Помилка: Невірний адмін ключ";
+        }
+
+        if (count($is_active) == 0) {
+            return  "Помилка: Невірний код";
+        }
+
+        if ($is_active[0]["STATUS"] == 0) {
+            return "Помилка: Квиток вже використано";
+        }
+
+        $from = $this->query(SQL::SELECT(["GET" => ["NAME"], "WHERE" => ["ID" => $is_active[0]['FROM_PLACE']]], 0, STATIONS))[0]["NAME"];
+        $to = $this->query(SQL::SELECT(["GET" => ["NAME"], "WHERE" => ["ID" => $is_active[0]['TO_PLACE']]], 0, STATIONS))[0]["NAME"];
+
+        $this->query(SQL::UPDATE(["SET" => ["STATUS" => 0, "FROM_PLACE" => $from, "TO_PLACE" => $to], "WHERE" => ["CODE" => $code]], 0, ORDERS)) ;
+
+        return "OK";
     }
 }

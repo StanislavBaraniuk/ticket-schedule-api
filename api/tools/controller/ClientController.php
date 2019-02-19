@@ -22,7 +22,7 @@ class ClientController extends Controller {
     }
 
     function updateAction() {
-        Access::_RUN_(["authorization", "site_online"]);
+        Access::_RUN_(["authorization", "admin"]);
         $this->model->update($this->request);
     }
 
@@ -32,12 +32,12 @@ class ClientController extends Controller {
     }
 
     function getAction() {
-        Access::_RUN_(["authorization", "site_online"]);
+        Access::_RUN_(["authorization", "admin"]);
         ResponseControl::outputGet($this->model->get());
     }
 
     function getByIdAction($params) {
-        Access::_RUN_(["authorization", "site_online"]);
+        Access::_RUN_(["authorization"]);
         ResponseControl::outputGet($this->model->getById($params));
     }
 

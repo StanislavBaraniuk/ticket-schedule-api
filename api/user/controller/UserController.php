@@ -42,29 +42,9 @@ class UserController extends Controller
         $this->model->logout();
     }
 
-    function setPasswordAction () {
+    function changePasswordAction () {
         Access::_RUN_(["authorization"]);
-        $this->model->setPassword($this->user_data['password']);
-    }
-
-    function setFIOAction () {
-        Access::_RUN_(["authorization"]);
-        $this->model->setFIO($this->user_data['first_name'], $this->user_data['last_name']);
-    }
-
-    function setPhoneAction () {
-        Access::_RUN_(["authorization"]);
-        $this->model->setPhone($this->user_data['phone']);
-    }
-
-    function setEmailAction () {
-        Access::_RUN_(["authorization"]);
-        $this->model->setEmail($this->user_data['email']);
-    }
-
-    function setSexAction () {
-        Access::_RUN_(["authorization"]);
-        $this->model->setSex($this->user_data['sex']);
+        $this->model->setPassword($this->user_data['old'], $this->user_data['new']);
     }
 
     function getMenuAction () {
@@ -77,10 +57,16 @@ class UserController extends Controller
      * @param POST-request with data of JSON type { "email" : <value> }
      */
     public function forgetPasswordSendEmailAction () {
-        $token = TokenGenerator::generate();
-        $this->model->sendEmailWithTemporaryToken($this->user_data["email"], $token);
-        $this->model->addTemporaryToken($this->user_data["email"], $token, "password");
-        ResponseControl::outputGet('');
+        if (!empty($this->model->getPassword($this->user_data["email"]))) {
+            $token = TokenGenerator::generate();
+            $this->model->sendEmailWithTemporaryToken($this->user_data["email"], $token);
+            $this->model->addTemporaryToken($this->user_data["email"], $token, "password");
+            ResponseControl::outputGet('');
+            return '';
+        } else {
+            ResponseControl::generateStatus(404, "User not found");
+            return '';
+        }
     }
 
     /**
@@ -90,9 +76,13 @@ class UserController extends Controller
     public function forgetPasswordSetNewAction($token) {
         $email = $this->model->getTemporaryTokenUser($token);
         if (!empty($email) && !empty($_POST["password"])) {
-            $this->model->setFPassword($email, $_POST['password']);
-            $this->model->deleteTemporaryToken($token);
-            header("Location: ".FRONTEND_LINK);
+            if (preg_match("/.(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/", $_POST["password"])) {
+                $this->model->setFPassword($email, $_POST['password']);
+                $this->model->deleteTemporaryToken($token);
+                header("Location: ".FRONTEND_LINK);
+            } else {
+                $_POST['error'] = "Password wrong";
+            }
         } else if (!empty($email)) {
             Component::show("newPassword");
         } else {
@@ -123,7 +113,11 @@ class UserController extends Controller
 
     public function columnsAction ($params) {
         Access::_RUN_(['authorization', 'admin']);
-
         ResponseControl::outputGet($this->model->getTableColumns($params));
+    }
+
+    public function changeInfoAction () {
+        Access::_RUN_(['authorization']);
+        ResponseControl::outputGet($this->model->changeInfo(Parser::json()));
     }
 }

@@ -2,15 +2,21 @@
 
 class CityModel extends Model {
     function add ($params) {
-        // Aquilon base method
-        $this->query(SQL::INSERT($params));
+        if (count($this->query(SQL::SELECT(["GET" => ["ID"], "WHERE" => ["NAME" => $params["NAME"]]], 0, STATIONS))) < 1) {
+            $this->query(SQL::INSERT($params));
+            ResponseControl::generateStatus(200, "Exist");
+            return '';
+        } else {
+            ResponseControl::generateStatus(409, "Exist");
+            return '';
+        }
     }
 
     function delete ($params) {
         $this->query(SQL::DELETE(["ID" => $params], 0, STATIONS));
         
-        $this->query(SQL::DELETE(["FROM_PLACE" => $params], 0, ORDERS));
-        $this->query(SQL::DELETE(["TO_PLACE" => $params], 0, ORDERS));
+        $this->query(SQL::DELETE(["FROM_PLACE" => $params, "STATUS" => 0], 0, ORDERS));
+        $this->query(SQL::DELETE(["TO_PLACE" => $params, "STATUS" => 0], 0, ORDERS));
 
         $this->query(SQL::DELETE(["FROM_PLACE" => $params], 0, TICKETS));
         $this->query(SQL::DELETE(["TO_PLACE" => $params], 0, TICKETS));

@@ -10,6 +10,8 @@ class TicketModel extends Model
 {
     function add ($params = []) {
         $this->query(SQL::INSERT($params));
+
+        ResponseControl::outputGet();
     }
 
     function delete ($params) {
@@ -19,8 +21,10 @@ class TicketModel extends Model
         ResponseControl::outputGet();
     }
 
-    function update ($params = []) {
+    function update ($params) {
         $this->query(SQL::UPDATE($params, 0, TICKETS));
+
+        ResponseControl::outputGet("");
     }
 
     function get ($params = []) {
